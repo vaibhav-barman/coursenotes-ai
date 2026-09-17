@@ -1,9 +1,10 @@
 import browser
+import coursera
 
 
 driver = browser.setup()
 
-driver.get("https://www.selenium.dev/selenium/web/web-form.html")
+coursera.open_coursera(driver)
 
 input("Press Enter to close the browser...")
 
