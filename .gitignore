@@ -216,3 +216,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# -----------------------------------------
+# Custom Project Overrides & Asset Ignores
+# -----------------------------------------
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+
+transcripts/
+notes/
+output/
+
+cookies/
+browser_data/
+
+*.pdf
+*.tex
