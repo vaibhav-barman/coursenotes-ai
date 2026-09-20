@@ -45,3 +45,7 @@ def get_course_links(driver):
         seen_urls.add(url)
 
     return courses
+
+
+def open_course(driver, course):
+    driver.get(course["url"])

@@ -25,6 +25,11 @@ for item in courses:
     print(item["url"])
     print()
 
+
+course.open_course(driver, courses[0])
+
+print(f"Opened course: {courses[0]['name']}")
+
 input("Press Enter to close the browser...")
 
 driver.quit()
