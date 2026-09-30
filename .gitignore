@@ -237,3 +237,5 @@ browser_data/
 *.tex
 
 browser_data/
+# Temporary DOM inspection dumps
+src/page_dump.html
