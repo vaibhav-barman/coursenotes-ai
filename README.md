@@ -14,10 +14,11 @@ The following features are **implemented and tested**:
 - **Course discovery** — Navigates to Coursera and discovers all enrolled courses dynamically. Does not hardcode course names or URLs.
 - **Module and lecture discovery** — Opens an individual course and visits each module page to collect lecture titles, URLs, and supplementary reading links. Filters out quizzes, discussion prompts, assignments, and other non-content links.
 - **Output verified for Modern Databases** — 12 modules, 186 lectures, and 53 supplementary readings discovered in a real authenticated session.
-
-The following feature is **in development and not yet verified**:
-
-- **Transcript extraction** *(experimental)* — Implementation exists in `src/transcript.py` to click the Coursera Transcript tab on a lecture page and extract its text. This has not yet been successfully tested end-to-end.
+- **Transcript extraction** — Extracts speech segments from the Coursera interactive Transcript panel via `span.rc-Phrase` elements in DOM order, filtering out timestamp buttons and UI chrome.
+- **Resumable extraction pipeline** — Iterates over all lectures in order, skipping already-saved transcripts on disk to enable fast, safe reruns.
+- **Bounded retries & error handling** — Handles transient navigation or load glitches with configurable retries, graceful `KeyboardInterrupt` handling, and detailed failure tracking.
+- **Local run reports** — Writes comprehensive machine-readable run reports (JSON) recording completed, skipped, unavailable, and failed lectures under `output/reports/`.
+- **Automated test suite** — Unit test suite with mocks in `tests/test_pipeline.py` verifying retries, resumption, ordering, error handling, and reporting without requiring browser sessions.
 
 ---
 
@@ -27,14 +28,14 @@ In order of implementation priority:
 
 1. ✅ Discover enrolled courses
 2. ✅ Discover modules, lectures, and supplementary readings
-3. 🔄 Extract available lecture transcripts *(in progress)*
+3. ✅ Extract available lecture transcripts
 4. ⬜ Clean and normalize transcript text
 5. ⬜ Generate structured study notes using an LLM
 6. ⬜ Export notes to Markdown files
 7. ⬜ Optional PDF export
-8. ⬜ Organize output by course, module, and lecture
-9. ⬜ Skip already-processed lectures on reruns
-10. ⬜ Improve error handling, logging, and test coverage
+8. ✅ Organize output by course, module, and lecture
+9. ✅ Skip already-processed lectures on reruns
+10. ✅ Improve error handling, logging, and test coverage
 
 ---
 
@@ -110,6 +111,29 @@ The script will:
 4. Open the first course (currently Modern Databases).
 5. Discover all modules and visit each one to collect lecture and reading links.
 6. Print a summary of modules, lectures, and readings found.
+7. Prompt to run transcript extraction across the course, skipping already-saved lectures and generating a machine-readable run report.
+
+You can also run the pipeline directly:
+
+```bash
+cd src
+python pipeline.py
+```
+
+### Running Tests
+
+Run the offline unit test suite:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+To run the live 3-lecture browser test (requires active Coursera login):
+
+```bash
+cd src
+python test_transcript.py
+```
 
 ---
 
@@ -118,20 +142,24 @@ The script will:
 ```
 coursenotes-ai/
 ├── src/
-│   ├── main.py          # Entry point: runs the full discovery flow
-│   ├── browser.py       # Chrome setup with persistent profile
-│   ├── coursera.py      # Coursera homepage navigation
-│   ├── course.py        # Course, module, and lecture discovery
-│   └── transcript.py    # Transcript extraction (experimental, not yet verified)
-├── output/              # Generated output — not committed (see .gitignore)
-│   └── transcripts/     # Saved transcript text files (when implemented)
-├── browser_data/        # Persistent Chrome profile — never commit this
-├── tests/               # Test directory (currently empty)
-├── requirements.txt     # Python dependencies
+│   ├── main.py             # Entry point: discovery + optional transcript extraction
+│   ├── pipeline.py         # Resumable course-wide extraction pipeline & reporting
+│   ├── browser.py          # Chrome setup with persistent profile
+│   ├── coursera.py         # Coursera homepage navigation
+│   ├── course.py           # Course, module, and lecture discovery
+│   ├── transcript.py       # Transcript extraction & file saving
+│   └── test_transcript.py  # 3-lecture live browser test
+├── tests/
+│   └── test_pipeline.py    # Unit tests with mocks (resumption, retries, reporting)
+├── output/                 # Generated output — not committed (see .gitignore)
+│   ├── transcripts/        # Saved transcript text files by course and module
+│   └── reports/            # Machine-readable JSON extraction run reports
+├── browser_data/           # Persistent Chrome profile — never commit this
+├── requirements.txt        # Python dependencies
 └── .gitignore
 ```
 
-`notes/`, `transcripts/`, and `output/` at the project root are local output directories excluded from version control.
+`notes/`, `transcripts/`, `reports/`, and `output/` at the project root are local output directories excluded from version control.
 
 ---
 
@@ -143,7 +171,7 @@ The following are **excluded from Git** and must never be committed:
 |---|---|
 | `browser_data/` | Contains your browser session, cookies, and credentials |
 | `.venv/` | Python virtual environment |
-| `output/` | Generated transcript and note files |
+| `output/` | Generated transcript and run report files (`transcripts/`, `reports/`) |
 | `src/*.html` | Temporary DOM inspection dumps |
 | `.env` | Environment variables and API keys (not yet used) |
 

@@ -75,6 +75,47 @@ def _safe_filename(text: str, max_len: int = 80) -> str:
     return slug[:max_len]
 
 
+# Public aliases
+slug_from_url = _slug_from_url
+safe_filename = _safe_filename
+
+
+def get_transcript_path(
+    output_dir: Path,
+    course_slug: str,
+    module_number: int,
+    slug_or_url: str,
+) -> Path:
+    """
+    Compute the filesystem destination path for a transcript file.
+
+    Path format:
+        <output_dir>/transcripts/<course_slug>/module_<NN>/<slug>.txt
+    """
+    slug = _slug_from_url(slug_or_url) if "/" in slug_or_url else slug_or_url
+    filename = _safe_filename(slug) + ".txt"
+    return (
+        output_dir
+        / "transcripts"
+        / course_slug
+        / f"module_{module_number:02d}"
+        / filename
+    )
+
+
+def is_transcript_saved(
+    output_dir: Path,
+    course_slug: str,
+    module_number: int,
+    slug_or_url: str,
+) -> bool:
+    """
+    Return True if the transcript file already exists and is non-empty.
+    """
+    path = get_transcript_path(output_dir, course_slug, module_number, slug_or_url)
+    return path.exists() and path.stat().st_size > 0
+
+
 def get_transcript(driver, lecture: dict, module_number: int) -> dict:
     """
     Navigate to a lecture page, open the Transcript panel if necessary,

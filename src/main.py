@@ -1,6 +1,7 @@
 import browser
 import coursera
 import course
+import pipeline
 
 
 driver = browser.setup()
@@ -79,6 +80,14 @@ print(f"\n--- Discovery complete ---")
 print(f"Modules : {len(modules)}")
 print(f"Lectures: {total_lectures}")
 print(f"Readings: {total_readings}")
+
+proceed = input("\nProceed with transcript extraction for this course? [Y/n]: ").strip().lower()
+if proceed in ("", "y", "yes"):
+    pipeline.extract_course_transcripts(
+        driver=driver,
+        course_info=courses[0],
+        all_items=all_items,
+    )
 
 input("\nPress Enter to close the browser...")
 

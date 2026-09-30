@@ -229,6 +229,7 @@ venv/
 transcripts/
 notes/
 output/
+reports/
 
 cookies/
 browser_data/
