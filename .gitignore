@@ -239,3 +239,6 @@ browser_data/
 browser_data/
 # Temporary DOM inspection dumps
 src/page_dump.html
+src/lecture_dump.html
+src/transcript_dump.html
+src/inspect_lecture.py
